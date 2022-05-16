@@ -29,6 +29,33 @@ async function run() {
       res.send(services)
     });
 
+    //Warning: 
+    //this is not the proper way to query
+    //After learning more about mongodb ,use aggregate lookup,pipeline,match,group
+    app.get('/available', async (req, res) => {
+      const date = req.query.date || 'May 11,2022';
+
+      //step 1: get all services
+
+      const services = await serviceCollection.find().toArray();
+
+      //step 1:get the booking of that day
+      const query = { date: date };
+      const bookings = await bookingCollection.find(query).toArray();
+      //step 3: for each service, find bookings for that service
+      services.forEach(service => {
+        //step 4: find booking for that service
+        const serviceBookings = bookings.filter(b => b.treatment === service.name);
+        //select slots for the service Bookings: ['','','']
+        const booked = serviceBookings.map(s => s.slot);
+        //step 6: select those slots that are not in booked slot
+        const available = service.slots.filter(s => !booked.includes(s));
+        //step 7: set available
+        service.slots = available;
+      })
+      res.send(services)
+    })
+
     /* 
         *API Naming Convention
         * app.get('/booking')//get all booking in this collection or get more than one or by filter or query
@@ -60,7 +87,7 @@ run().catch(console.dir)
 
 
 app.get('/', (req, res) => {
-  res.send('hello wordl');
+  res.send('this is a doctors portal');
 })
 
 app.listen(port, () => {
