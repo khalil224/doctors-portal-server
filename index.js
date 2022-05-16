@@ -65,6 +65,8 @@ async function run() {
         * app.delete('/booking/:id')
         */
 
+
+
     app.post('/booking', async (req, res) => {
       const booking = req.body;
       const query = { treatment: booking.treatment, date: booking.date, patient: booking.patient }
